@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"image/color"
+
 	"gioui.org/app"
 	"gioui.org/font"
 	"gioui.org/font/gofont"
@@ -16,6 +17,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+
+	"georgeallen.net/audio_cards/controller"
 )
 
 type (
@@ -46,6 +49,7 @@ var (
 var words = []string{"One","two","three"}  
 
 func main() {
+	controller.GenerateSpokenWord("The word", "English")
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
 		if err := loop(w); err != nil {
