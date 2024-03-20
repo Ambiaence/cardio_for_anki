@@ -26,11 +26,20 @@ type (
 	C = layout.Context
 )
 
+type WordButton struct {
+	text string
+	area *widget.Clickable
+	
+}
+
 var (
+	update_words = true
 	lineEditor = &widget.Editor{
 		SingleLine: true,
 		Submit:     true,
 	}
+
+	word_buttons = []WordButton{}
 
 	button_list = &widget.List{
 		List: layout.List{
@@ -73,13 +82,13 @@ func loop(window *app.Window) error {
 			return event.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, event)
-			kitchen(gtx, theme)
+			dashboard(gtx, theme)
 			event.Frame(gtx.Ops)
 		}
 	}
 }
 
-func kitchen(gtx layout.Context, th *material.Theme) layout.Dimensions {
+func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	for {
 		e, ok := lineEditor.Update(gtx)
 		if !ok {
@@ -91,6 +100,7 @@ func kitchen(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			for _, word := range words {
 				fmt.Print(word, "\n")
 			}
+			update_words = true;
 		}
 	}
 
@@ -108,13 +118,32 @@ func kitchen(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	buttons := func(gtx C) D {
 		flex := layout.Flex{}
 		list_style := material.List(th, button_list)
-		button_generator := func(gtx C, i int) D {
-			fmt.Println("Test?")
-			button := new(widget.Clickable)
+
+		buttons_new := func(gtx C, i int) D {
+			var button WordButton
+
 			text := strconv.Itoa(i) 
 			text += ": "
 			text += words[i]
-			return material.Button(th, button, text).Layout(gtx)
+
+			button.area = new(widget.Clickable)
+			fmt.Println("Nice")
+			button.text = text
+			word_buttons = append(word_buttons, button)
+			update_words = false;
+
+			return material.Button(th, button.area, button.text).Layout(gtx)
+		}
+
+		buttons_old := func(gtx C, i int) D {
+			button := word_buttons[i]
+			return material.Button(th, button.area, button.text).Layout(gtx)
+		}
+
+		button_generator :=  buttons_old
+
+		if (update_words) {
+			button_generator = buttons_new
 		}
 
 		anon_list := func(gtx C) D {
