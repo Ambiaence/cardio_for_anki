@@ -29,7 +29,7 @@ type (
 type WordButton struct {
 	text string
 	area *widget.Clickable
-	
+	number int	
 }
 
 var (
@@ -121,16 +121,16 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 		buttons_new := func(gtx C, i int) D {
 			var button WordButton
-
 			text := strconv.Itoa(i) 
 			text += ": "
 			text += words[i]
 
 			button.area = new(widget.Clickable)
-			fmt.Println("Nice")
 			button.text = text
+			button.number = i
 			word_buttons = append(word_buttons, button)
 			update_words = false;
+
 
 			return material.Button(th, button.area, button.text).Layout(gtx)
 		}
@@ -143,9 +143,11 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		button_generator :=  buttons_old
 
 		if (update_words) {
+			word_buttons = word_buttons[:0]
 			button_generator = buttons_new
 		}
 
+		update_words = false
 		anon_list := func(gtx C) D {
 			return list_style.Layout(gtx, len(words), button_generator)
 		}
