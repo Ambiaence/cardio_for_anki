@@ -22,17 +22,20 @@ import (
 	"georgeallen.net/audio_cards/controller"
 )
 
+const (
+	start = iota
+	choice = iota
+	curate = iota
+	end = iota
+)
+
 type mode struct {
 	value int
 }
 
 func (m *mode) next_mode (){
-	fmt.Println("-----")
-	fmt.Println(m.value)
 	m.value = m.value + 1
-	fmt.Println(m.value)
-
-	if m.value > 2 {
+	if m.value > end {
 		m.value = 0
 	}
 }
@@ -40,6 +43,7 @@ func (m *mode) next_mode (){
 type (
 	D = layout.Dimensions
 	C = layout.Context
+
 )
 
 type WordButton struct {
@@ -111,6 +115,7 @@ func loop(window *app.Window) error {
 }
 
 func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
+	submited := false
 	for {
 		e, ok := lineEditor.Update(gtx)
 
@@ -122,36 +127,34 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			sentence = string(e.Text)
 			words = strings.Fields(e.Text)
 			lineEditor.SetText("")
-			for _, word := range words {
-				fmt.Print(word, "\n")
-			}
 			update_words = true;
+			control_state.next_mode()
+			submited = true
 		}
 	}
 
 	for {
 		key_event, ok := gtx.Source.Event(key.Filter{})
+		fmt.Println(key_event)
 		if !ok {
 			break
 		}
 
-		key, ok := key_event.(key.Event)
+		if submited  == true {
+			break
+		}
+
+
+		k, ok := key_event.(key.Event)
 		if !ok {
 			continue
 		}
 		
-		if key.Name == "Tab" {
+		if k.Name == "⏎" && k.State == key.Press {
 			control_state.next_mode()
 		}
 
-		switch state := control_state.value; state {
-			case 0: 
-				fmt.Println("One")
-			case 1:
-				fmt.Println("Two")
-			case 2:
-				fmt.Println("Thr")
-		}
+		fmt.Println(control_state.value)
 	}
 
 	editor := func(gtx C) D {
@@ -214,7 +217,7 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 	widgets := &stage_one
 
-	if (control_state.value == 1) {
+	if (control_state.value != 0) {
 		widgets = &stage_one
 	} else {
 		widgets = &stage_two
