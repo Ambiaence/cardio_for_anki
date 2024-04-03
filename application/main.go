@@ -22,6 +22,9 @@ import (
 	"georgeallen.net/audio_cards/controller"
 )
 
+var red_button_color = color.NRGBA{R: 229, G: 163, B: 163 ,A: 255}
+var blue_button_color = color.NRGBA{R: 132, G: 205,  B: 238, A: 255}
+
 const (
 	start = iota
 	choice = iota
@@ -49,6 +52,7 @@ type (
 type WordButton struct {
 	text string
 	word string
+	chosen bool
 	area *widget.Clickable
 	number int	
 }
@@ -96,6 +100,7 @@ func main() {
 func loop(window *app.Window) error {
 	theme := material.NewTheme()
 	theme.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
+	theme.ContrastBg = blue_button_color
 
 
 	var ops op.Ops
@@ -116,6 +121,10 @@ func loop(window *app.Window) error {
 
 func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	submited := false
+
+	red_button_theme := material.NewTheme()
+	red_button_theme.ContrastBg = red_button_color
+
 	for {
 		e, ok := lineEditor.Update(gtx)
 
@@ -135,7 +144,6 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 	for {
 		key_event, ok := gtx.Source.Event(key.Filter{})
-		fmt.Println(key_event)
 		if !ok {
 			break
 		}
@@ -149,12 +157,32 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		if !ok {
 			continue
 		}
+
 		
 		if k.Name == "⏎" && k.State == key.Press {
 			control_state.next_mode()
 		}
 
-		fmt.Println(control_state.value)
+		if (control_state.value == choice) && (k.State == key.Press) {
+			fmt.Println("Chosen", k.Name)
+
+			if len(k.Name) != 1 {
+				break
+			}
+
+
+			value, err := strconv.ParseInt(string(k.Name), 10, 64)
+			if err != nil {
+				break
+			}
+
+			if value >= int64(len(word_buttons)) {
+				break
+			}
+			
+			word_buttons[value].chosen = !word_buttons[value].chosen
+		}
+
 	}
 
 	editor := func(gtx C) D {
@@ -181,6 +209,7 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			button.word = words[i] 
 			button.area = new(widget.Clickable)
 			button.text = text
+			button.chosen = false
 			button.number = i
 
 			word_buttons = append(word_buttons, button)
@@ -190,6 +219,9 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 		buttons_old := func(gtx C, i int) D {
 			button := word_buttons[i]
+			if button.chosen == true {
+				return material.Button(red_button_theme, button.area, button.text).Layout(gtx)
+			}
 			return material.Button(th, button.area, button.text).Layout(gtx)
 		}
 
