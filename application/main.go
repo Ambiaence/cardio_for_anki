@@ -57,6 +57,7 @@ type WordButton struct {
 	number int	
 }
 
+
 var (
 	update_words = true
 	lineEditor = &widget.Editor{
@@ -83,6 +84,22 @@ var (
 var words = []string{"One","two","three"}  
 var sentence string 
 var control_state = mode{value: 0}
+
+var current_curated_position = 0 
+var current_curaated_word *WordButton
+
+func next_chosen_button() *WordButton {
+	for {
+		current_curated_position = current_curated_position + 1
+		if (current_curated_position == len(word_buttons)) {
+			current_curated_position = 0
+		}
+
+		if word_buttons[current_curated_position].chosen { 
+			return &word_buttons[current_curated_position]
+		}
+	}
+}
 
 func main() {
 	controller.GenerateSpokenWord("The word", "English")
@@ -183,6 +200,20 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			word_buttons[value].chosen = !word_buttons[value].chosen
 		}
 
+		if (control_state.value == curate){
+			current_curaated_word = &word_buttons[0]
+			fmt.Println("Cruate", k.Name)
+			if (k.Name == "Tab") {
+				current_curaated_word = next_chosen_button()
+			}
+		}
+
+	}
+
+	word_curator := func(gtx C) D { 
+		text := current_curaated_word.text
+		label := material.H3(th, text)
+		return label.Layout(gtx)
 	}
 
 	editor := func(gtx C) D {
@@ -240,19 +271,25 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	}
 
 	stage_one := []layout.Widget{
-		buttons,
+		editor,
 	}
 
 	stage_two := []layout.Widget{
-		editor,
+		buttons,
+	}
+
+	stage_three := []layout.Widget{
+		word_curator,
 	}
 
 	widgets := &stage_one
 
-	if (control_state.value != 0) {
+	if (control_state.value == 0) {
 		widgets = &stage_one
-	} else {
+	} else if (control_state.value == 1) {
 		widgets = &stage_two
+	} else if (control_state.value == 2) { 
+		widgets = &stage_three
 	}
 
 
