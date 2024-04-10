@@ -86,7 +86,8 @@ var sentence string
 var control_state = mode{value: 0}
 
 var current_curated_position = 0 
-var current_curaated_word *WordButton
+var current_curated_word *WordButton
+var reset_curate = true
 
 func next_chosen_button() *WordButton {
 	for {
@@ -103,6 +104,7 @@ func next_chosen_button() *WordButton {
 
 func main() {
 	controller.GenerateSpokenWord("The word", "English")
+	controller.WordEquivalents("dass")
 
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
@@ -201,17 +203,20 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		}
 
 		if (control_state.value == curate){
-			current_curaated_word = &word_buttons[0]
-			fmt.Println("Cruate", k.Name)
+			if reset_curate == true {
+				current_curated_word = next_chosen_button()
+				reset_curate = false
+			}
+
 			if (k.Name == "Tab") {
-				current_curaated_word = next_chosen_button()
+				current_curated_word = next_chosen_button()
 			}
 		}
 
 	}
 
 	word_curator := func(gtx C) D { 
-		text := current_curaated_word.text
+		text := current_curated_word.text
 		label := material.H3(th, text)
 		return label.Layout(gtx)
 	}
@@ -288,6 +293,7 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		widgets = &stage_one
 	} else if (control_state.value == 1) {
 		widgets = &stage_two
+		reset_curate = true
 	} else if (control_state.value == 2) { 
 		widgets = &stage_three
 	}
