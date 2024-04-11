@@ -1,6 +1,6 @@
 {
-	"source" : "english",
-	"target" : "german",
+	"source" : "en",
+	"target" : "de",
 	"tts" : "espeak",
 	"translate" : "google",
 }

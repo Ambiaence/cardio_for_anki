@@ -22,9 +22,6 @@ import (
 	"georgeallen.net/audio_cards/controller"
 )
 
-var red_button_color = color.NRGBA{R: 229, G: 163, B: 163 ,A: 255}
-var blue_button_color = color.NRGBA{R: 132, G: 205,  B: 238, A: 255}
-
 const (
 	start = iota
 	choice = iota
@@ -52,11 +49,9 @@ type (
 type WordButton struct {
 	text string
 	word string
-	chosen bool
 	area *widget.Clickable
 	number int	
 }
-
 
 var (
 	update_words = true
@@ -85,26 +80,8 @@ var words = []string{"One","two","three"}
 var sentence string 
 var control_state = mode{value: 0}
 
-var current_curated_position = 0 
-var current_curated_word *WordButton
-var reset_curate = true
-
-func next_chosen_button() *WordButton {
-	for {
-		current_curated_position = current_curated_position + 1
-		if (current_curated_position == len(word_buttons)) {
-			current_curated_position = 0
-		}
-
-		if word_buttons[current_curated_position].chosen { 
-			return &word_buttons[current_curated_position]
-		}
-	}
-}
-
 func main() {
 	controller.GenerateSpokenWord("The word", "English")
-	controller.WordEquivalents("bestimmt")
 
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
@@ -119,7 +96,6 @@ func main() {
 func loop(window *app.Window) error {
 	theme := material.NewTheme()
 	theme.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
-	theme.ContrastBg = blue_button_color
 
 
 	var ops op.Ops
@@ -140,10 +116,6 @@ func loop(window *app.Window) error {
 
 func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	submited := false
-
-	red_button_theme := material.NewTheme()
-	red_button_theme.ContrastBg = red_button_color
-
 	for {
 		e, ok := lineEditor.Update(gtx)
 
@@ -184,41 +156,8 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 		if (control_state.value == choice) && (k.State == key.Press) {
 			fmt.Println("Chosen", k.Name)
-
-			if len(k.Name) != 1 {
-				break
-			}
-
-
-			value, err := strconv.ParseInt(string(k.Name), 10, 64)
-			if err != nil {
-				break
-			}
-
-			if value >= int64(len(word_buttons)) {
-				break
-			}
-			
-			word_buttons[value].chosen = !word_buttons[value].chosen
 		}
 
-		if (control_state.value == curate){
-			if reset_curate == true {
-				current_curated_word = next_chosen_button()
-				reset_curate = false
-			}
-
-			if (k.Name == "Tab") {
-				current_curated_word = next_chosen_button()
-			}
-		}
-
-	}
-
-	word_curator := func(gtx C) D { 
-		text := current_curated_word.text
-		label := material.H3(th, text)
-		return label.Layout(gtx)
 	}
 
 	editor := func(gtx C) D {
@@ -245,7 +184,6 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			button.word = words[i] 
 			button.area = new(widget.Clickable)
 			button.text = text
-			button.chosen = false
 			button.number = i
 
 			word_buttons = append(word_buttons, button)
@@ -255,8 +193,8 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 		buttons_old := func(gtx C, i int) D {
 			button := word_buttons[i]
-			if button.chosen == true {
-				return material.Button(red_button_theme, button.area, button.text).Layout(gtx)
+			if i = 0 {  
+				return material.Button(th, button.area, button.text).Background(color.RGB{RedLayout(gtx)
 			}
 			return material.Button(th, button.area, button.text).Layout(gtx)
 		}
@@ -276,26 +214,19 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	}
 
 	stage_one := []layout.Widget{
-		editor,
-	}
-
-	stage_two := []layout.Widget{
 		buttons,
 	}
 
-	stage_three := []layout.Widget{
-		word_curator,
+	stage_two := []layout.Widget{
+		editor,
 	}
 
 	widgets := &stage_one
 
-	if (control_state.value == 0) {
+	if (control_state.value != 0) {
 		widgets = &stage_one
-	} else if (control_state.value == 1) {
+	} else {
 		widgets = &stage_two
-		reset_curate = true
-	} else if (control_state.value == 2) { 
-		widgets = &stage_three
 	}
 
 
