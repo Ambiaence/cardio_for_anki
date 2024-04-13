@@ -2,7 +2,7 @@ package main
 // Return the captured text inside the <a> tag
 import (
 	"strconv"
-	"fmt"
+	_ "fmt"
 	"log"
 	"os"
 	"strings"
@@ -60,6 +60,7 @@ type WordButton struct {
 
 var (
 	theme *material.Theme
+	red_button_theme *material.Theme
 
 	update_words = true
 
@@ -134,6 +135,8 @@ func loop(window *app.Window) error {
 	theme.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	theme.ContrastBg = blue_button_color
 
+	red_button_theme = material.NewTheme()
+	red_button_theme.ContrastBg = red_button_color
 
 	var ops op.Ops
 
@@ -151,23 +154,112 @@ func loop(window *app.Window) error {
 	}
 }
 
-func editor_f(gtx C) D {
-		editor_style := material.Editor(theme, lineEditor, "Hint")
-		editor_style.Font.Style = font.Italic
-		border := widget.Border{Color: color.NRGBA{A: 0xff}, CornerRadius: unit.Dp(8), Width: unit.Dp(2)}
-		spaced := func(gtx C) D {
-			return layout.UniformInset(unit.Dp(16)).Layout(gtx, editor_style.Layout)
-		}
-		dimensions := border.Layout(gtx, spaced)
-		return dimensions 
+func sentence_input(gtx C) D {
+	editor_style := material.Editor(theme, lineEditor, "Hint")
+	editor_style.Font.Style = font.Italic
+	border := widget.Border{Color: color.NRGBA{A: 0xff}, CornerRadius: unit.Dp(8), Width: unit.Dp(2)}
+	spaced := func(gtx C) D {
+		return layout.UniformInset(unit.Dp(16)).Layout(gtx, editor_style.Layout)
+	}
+	dimensions := border.Layout(gtx, spaced)
+	return dimensions 
 }
 
+func target_word_selection(gtx C) D {
+	flex := layout.Flex{}
+	list_style := material.List(theme, button_list)
+
+	buttons_new := func(gtx C, i int) D {
+		var button WordButton
+		text := strconv.Itoa(i) 
+		text += " - "
+		text += words[i] 
+
+		button.word = words[i] 
+		button.area = new(widget.Clickable)
+		button.text = text
+		button.chosen = false
+		button.number = i
+
+		word_buttons = append(word_buttons, button)
+		update_words = false;
+		return material.Button(theme, button.area, button.text).Layout(gtx)
+	}
+
+	buttons_old := func(gtx C, i int) D {
+		button := word_buttons[i]
+		if button.chosen == true {
+			return material.Button(red_button_theme, button.area, button.text).Layout(gtx)
+		}
+		return material.Button(theme, button.area, button.text).Layout(gtx)
+	}
+
+	button_generator := buttons_old
+
+	if (update_words) {
+		word_buttons = word_buttons[:0]
+		button_generator = buttons_new
+	}
+
+	update_words = false
+	anon_list := func(gtx C) D {
+		return list_style.Layout(gtx, len(words), button_generator)
+	}
+	return flex.Layout(gtx, layout.Flexed(1, anon_list))
+}
+
+func word_being_curated(gtx C) D { 
+	text := current_curated_word.word
+	label := material.H3(theme, text)
+	return label.Layout(gtx)
+}
+
+func definitions(gtx C) D {
+	flex := layout.Flex{}
+	list_style := material.List(theme, definition_list)
+
+	buttons_new := func(gtx C, i int) D {
+		var button WordButton
+		text := strconv.Itoa(i) 
+		text += " - "
+		text += string(curated_word_definitions[i])
+
+		button.word = string(curated_word_definitions[i]) 
+		button.area = new(widget.Clickable)
+		button.text = text
+		button.chosen = false
+		button.number = i
+
+		definition_buttons = append(definition_buttons, button)
+		update_word_definitions = false;
+		return material.Button(theme, button.area, button.text).Layout(gtx)
+	}
+
+	buttons_old := func(gtx C, i int) D {
+		button := definition_buttons[i]
+		if button.chosen == true {
+			return material.Button(red_button_theme, button.area, button.text).Layout(gtx)
+		}
+		return material.Button(theme, button.area, button.text).Layout(gtx)
+	}
+
+	button_generator := buttons_old
+
+	if (update_word_definitions) {
+		definition_buttons = definition_buttons[:0]
+		button_generator = buttons_new
+	}
+
+	update_word_definitions = false
+
+	anon_list := func(gtx C) D {
+		return list_style.Layout(gtx, len(curated_word_definitions), button_generator)
+	}
+	return flex.Layout(gtx, layout.Flexed(1, anon_list))
+}
 
 func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	submited := false
-
-	red_button_theme := material.NewTheme()
-	red_button_theme.ContrastBg = red_button_color
 
 	for {
 		e, ok := lineEditor.Update(gtx)
@@ -209,7 +301,6 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		}
 
 		if (control_state.value == choice) && (k.State == key.Press) {
-			fmt.Println("Chosen", k.Name)
 
 			if len(k.Name) != 1 {
 				break
@@ -243,118 +334,12 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		}
 	}
 
-	word_being_curated := func(gtx C) D { 
-		text := current_curated_word.word
-		label := material.H3(th, text)
-		return label.Layout(gtx)
-	}
-
-	editor := func(gtx C) D {
-		editor_style := material.Editor(th, lineEditor, "Hint")
-		editor_style.Font.Style = font.Italic
-		border := widget.Border{Color: color.NRGBA{A: 0xff}, CornerRadius: unit.Dp(8), Width: unit.Dp(2)}
-		spaced := func(gtx C) D {
-			return layout.UniformInset(unit.Dp(16)).Layout(gtx, editor_style.Layout)
-		}
-		dimensions := border.Layout(gtx, spaced)
-		return dimensions 
-	}
-
-	_ = editor
-
-	definitions := func(gtx C) D {
-		flex := layout.Flex{}
-		list_style := material.List(th, definition_list)
-
-		buttons_new := func(gtx C, i int) D {
-			var button WordButton
-			text := strconv.Itoa(i) 
-			text += " - "
-			text += string(curated_word_definitions[i])
-
-			button.word = string(curated_word_definitions[i]) 
-			button.area = new(widget.Clickable)
-			button.text = text
-			button.chosen = false
-			button.number = i
-
-			definition_buttons = append(definition_buttons, button)
-			update_word_definitions = false;
-			return material.Button(th, button.area, button.text).Layout(gtx)
-		}
-
-		buttons_old := func(gtx C, i int) D {
-			button := definition_buttons[i]
-			if button.chosen == true {
-				return material.Button(red_button_theme, button.area, button.text).Layout(gtx)
-			}
-			return material.Button(th, button.area, button.text).Layout(gtx)
-		}
-
-		button_generator := buttons_old
-
-		if (update_word_definitions) {
-			definition_buttons = definition_buttons[:0]
-			button_generator = buttons_new
-		}
-
-		update_word_definitions = false
-
-		anon_list := func(gtx C) D {
-			return list_style.Layout(gtx, len(curated_word_definitions), button_generator)
-		}
-		return flex.Layout(gtx, layout.Flexed(1, anon_list))
-	}
-
-	buttons := func(gtx C) D {
-		flex := layout.Flex{}
-		list_style := material.List(th, button_list)
-
-		buttons_new := func(gtx C, i int) D {
-			var button WordButton
-			text := strconv.Itoa(i) 
-			text += " - "
-			text += words[i] 
-
-			button.word = words[i] 
-			button.area = new(widget.Clickable)
-			button.text = text
-			button.chosen = false
-			button.number = i
-
-			word_buttons = append(word_buttons, button)
-			update_words = false;
-			return material.Button(th, button.area, button.text).Layout(gtx)
-		}
-
-		buttons_old := func(gtx C, i int) D {
-			button := word_buttons[i]
-			if button.chosen == true {
-				return material.Button(red_button_theme, button.area, button.text).Layout(gtx)
-			}
-			return material.Button(th, button.area, button.text).Layout(gtx)
-		}
-
-		button_generator :=  buttons_old
-
-		if (update_words) {
-			word_buttons = word_buttons[:0]
-			button_generator = buttons_new
-		}
-
-		update_words = false
-		anon_list := func(gtx C) D {
-			return list_style.Layout(gtx, len(words), button_generator)
-		}
-		return flex.Layout(gtx, layout.Flexed(1, anon_list))
-	}
-
 	stage_one := []layout.Widget{
-		editor_f,
+		sentence_input,
 	}
 
 	stage_two := []layout.Widget{
-		buttons,
+		target_word_selection,
 	}
 
 	stage_three := []layout.Widget{
@@ -376,7 +361,6 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	spaced := func(gtx C, i int) D {
 		return layout.UniformInset(unit.Dp(16)).Layout(gtx, (*widgets)[i])
 	}
-
 	list_style := material.List(th, list)
 	dimensions := list_style.Layout(gtx, len((*widgets)), spaced)
 	return dimensions
