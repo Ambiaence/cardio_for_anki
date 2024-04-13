@@ -118,6 +118,7 @@ func next_chosen_button() *WordButton {
 
 func main() {
 	controller.GenerateSpokenWord("The word", "English")
+	controller.TranslateSentence("Dummy")
 	//controller.WordEquivalents("bestimmt")
 
 	go func() {
