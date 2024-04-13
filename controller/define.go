@@ -20,14 +20,19 @@ type Category struct {
 }
 
 func WordEquivalents(word Word) WordList {
-	wikiEquivalents(word)
-	return WordList{"nice", "sick"}
+	list := wikiEquivalents(word)
+	return list 
 }
 
 func wikiEquivalents(word Word) WordList {
+    words := WordList{}
+
     url := fmt.Sprintf("https://en.wiktionary.org/api/rest_v1/page/definition/%s", word)
+
     client := &http.Client{}
+
     req, err := http.NewRequest("GET", url, nil)
+
     if err != nil {
         log.Fatal(err)
     }
@@ -35,6 +40,7 @@ func wikiEquivalents(word Word) WordList {
     req.Header.Set("accept", "application/json; charset=utf-8; profile=\"https://www.mediawiki.org/wiki/Specs/definition/0.8.0\"")
 
     resp, err := client.Do(req)
+
     if err != nil {
         log.Fatal(err)
     }
@@ -47,7 +53,6 @@ func wikiEquivalents(word Word) WordList {
     if err != nil {
         log.Fatal(err)
     }
-
 
     var data map[string]([]interface{})
 
@@ -65,20 +70,20 @@ func wikiEquivalents(word Word) WordList {
 
     err = json.Unmarshal(body, &data)
 
-
     for _, value := range raw {  
 	r := value.(map[string]interface{})
 	defs := r["definitions"].([]interface{})
 	str := defs[0].(map[string]interface{})
-	fmt.Println(extractTextFromATag(str["definition"].(string)))
+	input_string := str["definition"].(string)
+	temp_word_string := extractTextFromATag(input_string)
+	temp_word_word := Word(temp_word_string)
+	words = append(words, temp_word_word)
     }
-
-    return WordList{"Nice"}
+    return words
 }
 
-//This functions was ripped from Google Gemini.
+//This function was ripped from Google Gemini.
 func extractTextFromATag(html string) string { 
-  // Regular expression with improved handling of attributes and whitespace:
   pattern := `<a[^>]*>(.*?)</a>`
 
   re := regexp.MustCompile(pattern)
@@ -86,7 +91,7 @@ func extractTextFromATag(html string) string {
   match := re.FindStringSubmatch(html) 
 
   if match != nil {
-    return match[1] // Return the captured text inside the <a> tag
+    return match[1] 
   } else {
     return "No text found" 
   }
