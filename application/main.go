@@ -1,5 +1,5 @@
 package main
-// Return the captured text inside the <a> tag
+
 import (
 	"strconv"
 	_ "fmt"
@@ -117,10 +117,6 @@ func next_chosen_button() *WordButton {
 }
 
 func main() {
-	controller.GenerateSpokenWord("The word", "English")
-	controller.TranslateSentence("Dummy")
-	//controller.WordEquivalents("bestimmt")
-
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
 		if err := loop(w); err != nil {
@@ -259,6 +255,9 @@ func definitions(gtx C) D {
 	return flex.Layout(gtx, layout.Flexed(1, anon_list))
 }
 
+func input_and_state() {
+}
+
 func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	submited := false
 
@@ -306,7 +305,6 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			if len(k.Name) != 1 {
 				break
 			}
-
 
 			value, err := strconv.ParseInt(string(k.Name), 10, 64)
 			if err != nil {
@@ -362,6 +360,7 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	spaced := func(gtx C, i int) D {
 		return layout.UniformInset(unit.Dp(16)).Layout(gtx, (*widgets)[i])
 	}
+
 	list_style := material.List(th, list)
 	dimensions := list_style.Layout(gtx, len((*widgets)), spaced)
 	return dimensions

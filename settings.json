@@ -2,5 +2,6 @@
 	"source" : "en",
 	"target" : "de",
 	"tts" : "espeak",
-	"translate" : "google",
+	"translate" : "deepl",
+	"equivalents" : "deepl"
 }

@@ -13,14 +13,30 @@ type Word string
 
 type WordList []Word 
 
+type Translation map[string]string
+
+type Translations []Translation
+
+type DeeplResponse map[string]Translations
+
+
 type Category struct {
     PartOfSpeech string
     Language string
     Definitions map[string]string
 }
 
+
+type ResponseStruct struct {
+    Translations []Translation `json:"translations"`
+}
+
+
 func WordEquivalents(word Word) WordList {
 	list := wikiEquivalents(word)
+        word_string := string(word)
+        deepl_word := Word(TranslateSentence(word_string))
+        list = append(list, deepl_word)
 	return list 
 }
 
