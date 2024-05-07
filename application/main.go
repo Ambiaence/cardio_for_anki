@@ -318,6 +318,8 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			word_buttons[value].chosen = !word_buttons[value].chosen
 		}
 
+
+
 		if (control_state.value == curate){
 			if reset_curate == true {
 				current_curated_word = next_chosen_button()
@@ -330,6 +332,23 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 				current_curated_word = next_chosen_button()
 				curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
 			}
+		}
+
+		if (control_state.value == curate) && (k.State == key.Press) {
+			if len(k.Name) != 1 {
+				break
+			}
+
+			value, err := strconv.ParseInt(string(k.Name), 10, 64)
+			if err != nil {
+				break
+			}
+
+			if value >= int64(len(definition_buttons)) {
+				break
+			}
+			
+			definition_buttons[value].chosen = !definition_buttons[value].chosen
 		}
 	}
 

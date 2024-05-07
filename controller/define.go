@@ -8,7 +8,6 @@ import (
     "encoding/json"
     "log"
 )
-
 type Word string
 
 type WordList []Word 
