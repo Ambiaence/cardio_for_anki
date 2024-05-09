@@ -290,11 +290,8 @@ func handle_sentence_editor(gtx layout.Context, th *material.Theme) {
 	}
 }
 
-func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
-	submited = false
 
-	handle_sentence_editor(gtx, th)
-
+func handle_state_related_inputs(gtx layout.Context, th *material.Theme) {
 	for {
 		key_event, ok := gtx.Source.Event(key.Filter{})
 		if !ok {
@@ -383,6 +380,14 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			definition_buttons[value].chosen = !definition_buttons[value].chosen
 		}
 	}
+}
+
+func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
+	submited = false
+
+	handle_sentence_editor(gtx, th)
+
+	handle_state_related_inputs(gtx, th)
 
 	stage_one := []layout.Widget{
 		sentence_input,
