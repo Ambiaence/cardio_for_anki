@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	_ "fmt"
 	"log"
@@ -49,6 +50,10 @@ type (
 
 )
 
+type EquivalentWords []string
+
+type EquivalentMap map[int]EquivalentWords
+
 type WordButton struct {
 	text string
 	word string
@@ -57,6 +62,9 @@ type WordButton struct {
 	number int	
 }
 
+var p = fmt.Println
+
+var equivalents = make(EquivalentMap)
 
 var (
 	theme *material.Theme
@@ -102,6 +110,13 @@ var current_curated_word *WordButton
 var reset_curate = true
 var curated_word_definitions controller.WordList 
 var update_word_definitions = true
+
+var debug_count = 0
+
+func count() {
+	fmt.Println(debug_count)
+	debug_count++
+}
 
 func next_chosen_button() *WordButton {
 	for {
@@ -328,6 +343,21 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			}
 
 			if (k.Name == "Tab") {
+				equivalent_list := equivalents[current_curated_word.number]
+				equivalents[current_curated_word.number] = make(EquivalentWords, 99)
+				equivalent_list = equivalents[current_curated_word.number]
+
+				for index, button  := range definition_buttons {
+					_ = index
+
+					if button.chosen == false {
+						continue;
+					}
+
+					equivalent_list = append(equivalent_list, button.word)
+					fmt.Println(equivalent_list)
+				}
+
 				update_word_definitions = true
 				current_curated_word = next_chosen_button()
 				curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
