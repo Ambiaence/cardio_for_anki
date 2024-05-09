@@ -25,6 +25,8 @@ import (
 
 var red_button_color = color.NRGBA{R: 229, G: 163, B: 163 ,A: 255}
 var blue_button_color = color.NRGBA{R: 132, G: 205,  B: 238, A: 255}
+var submited bool
+
 
 const (
 	start = iota
@@ -110,7 +112,6 @@ var current_curated_word *WordButton
 var reset_curate = true
 var curated_word_definitions controller.WordList 
 var update_word_definitions = true
-
 var debug_count = 0
 
 func count() {
@@ -270,12 +271,7 @@ func definitions(gtx C) D {
 	return flex.Layout(gtx, layout.Flexed(1, anon_list))
 }
 
-func input_and_state() {
-}
-
-func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
-	submited := false
-
+func handle_sentence_editor(gtx layout.Context, th *material.Theme) {
 	for {
 		e, ok := lineEditor.Update(gtx)
 
@@ -292,6 +288,12 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 			submited = true
 		}
 	}
+}
+
+func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
+	submited = false
+
+	handle_sentence_editor(gtx, th)
 
 	for {
 		key_event, ok := gtx.Source.Event(key.Filter{})
