@@ -73,6 +73,7 @@ var (
 	red_button_theme *material.Theme
 
 	update_words = true
+	update_equivalents = true
 
 	lineEditor = &widget.Editor{
 		SingleLine: true,
@@ -80,11 +81,21 @@ var (
 	}
 
 	word_buttons = []WordButton{}
+
+	chosen_equivalents = []string{} 
+
 	definition_buttons = []WordButton{}
 
 	definition_list = &widget.List{
 		List: layout.List{
 			Axis: layout.Horizontal,
+		},
+
+	}
+
+	chosen_equivalents_list = &widget.List{
+		List: layout.List{
+			Axis: layout.Vertical,
 		},
 
 	}
@@ -103,7 +114,7 @@ var (
 	}
 )
 
-var words = []string{"One","two","three"}  
+var words = []string{"one","two","three"}  
 var sentence string 
 var control_state = mode{value: 0}
 
@@ -221,6 +232,46 @@ func target_word_selection(gtx C) D {
 	return flex.Layout(gtx, layout.Flexed(1, anon_list))
 }
 
+func chosen_equivalents_display(gtx C) D {
+	flex := layout.Flex{}
+	list_style := material.List(theme, chosen_equivalents_list)
+
+	list_new := func(gtx C, i int) D {
+		if i == 0 {
+			for key, value := range equivalents {
+				line := word_buttons[key].word + " -> "
+				for _, v := range value {
+					line = line + " / " + v 
+				}
+				chosen_equivalents = append(chosen_equivalents, line)
+			}
+				
+		}
+		string_line := chosen_equivalents[i]
+		return material.H6(theme, string_line).Layout(gtx)
+	}
+
+	list_old := func(gtx C, i int) D {
+		fmt.Println("Old Line:", i)
+		string_line := chosen_equivalents[i]
+		return material.H6(theme, string_line).Layout(gtx)
+	}
+
+	list_generator := list_old
+
+	if (update_equivalents) {
+		chosen_equivalents = chosen_equivalents[:0]
+		list_generator = list_new
+	}
+
+	update_equivalents = false
+
+	anon_list := func(gtx C) D {
+		return list_style.Layout(gtx, len(equivalents), list_generator)
+	}
+
+	return flex.Layout(gtx, layout.Flexed(1, anon_list))
+}
 func word_being_curated(gtx C) D { 
 	text := current_curated_word.word
 	label := material.H3(theme, text)
@@ -291,14 +342,15 @@ func handle_sentence_editor(gtx layout.Context, th *material.Theme) {
 }
 
 
-func handle_state_related_inputs(gtx layout.Context, th *material.Theme) {
+func handle_state_related_inputs(gtx layout.Context) {
 	for {
 		key_event, ok := gtx.Source.Event(key.Filter{})
+
 		if !ok {
 			break
 		}
 
-		if submited  == true {
+		if submited == true {
 			break
 		}
 
@@ -321,6 +373,7 @@ func handle_state_related_inputs(gtx layout.Context, th *material.Theme) {
 			}
 
 			value, err := strconv.ParseInt(string(k.Name), 10, 64)
+
 			if err != nil {
 				break
 			}
@@ -332,8 +385,6 @@ func handle_state_related_inputs(gtx layout.Context, th *material.Theme) {
 			word_buttons[value].chosen = !word_buttons[value].chosen
 		}
 
-
-
 		if (control_state.value == curate){
 			if reset_curate == true {
 				current_curated_word = next_chosen_button()
@@ -342,9 +393,7 @@ func handle_state_related_inputs(gtx layout.Context, th *material.Theme) {
 			}
 
 			if (k.Name == "Tab") {
-				equivalent_list := equivalents[current_curated_word.number]
-				equivalents[current_curated_word.number] = make(EquivalentWords, 99)
-				equivalent_list = equivalents[current_curated_word.number]
+				var equivalent_list EquivalentWords
 
 				for index, button  := range definition_buttons {
 					_ = index
@@ -357,7 +406,10 @@ func handle_state_related_inputs(gtx layout.Context, th *material.Theme) {
 					fmt.Println(equivalent_list)
 				}
 
+				equivalents[current_curated_word.number] = equivalent_list
+
 				update_word_definitions = true
+				update_equivalents = true
 				current_curated_word = next_chosen_button()
 				curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
 			}
@@ -387,7 +439,7 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 
 	handle_sentence_editor(gtx, th)
 
-	handle_state_related_inputs(gtx, th)
+	handle_state_related_inputs(gtx)
 
 	stage_one := []layout.Widget{
 		sentence_input,
@@ -400,6 +452,7 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	stage_three := []layout.Widget{
 		word_being_curated,
 		definitions,
+		chosen_equivalents_display,
 	}
 
 	widgets := &stage_one
