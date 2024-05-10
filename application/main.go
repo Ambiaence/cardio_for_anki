@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	_ "fmt"
 	"log"
 	"os"
 	"strings"
@@ -26,7 +25,6 @@ import (
 var red_button_color = color.NRGBA{R: 229, G: 163, B: 163 ,A: 255}
 var blue_button_color = color.NRGBA{R: 132, G: 205,  B: 238, A: 255}
 var submited bool
-
 
 const (
 	start = iota
@@ -115,20 +113,17 @@ var (
 )
 
 var words = []string{"one","two","three"}  
-var sentence string 
 var control_state = mode{value: 0}
-
 var current_curated_position = 0 
-var current_curated_word *WordButton
-var reset_curate = true
-var curated_word_definitions controller.WordList 
-var update_word_definitions = true
-var debug_count = 0
 
-func count() {
-	fmt.Println(debug_count)
-	debug_count++
-}
+var current_curated_word *WordButton
+var curated_word_definitions controller.WordList 
+
+var reset_curate = true
+var update_word_definitions = true
+
+var sentence string 
+var source_sentence string
 
 func next_chosen_button() *WordButton {
 	for {
@@ -252,7 +247,6 @@ func chosen_equivalents_display(gtx C) D {
 	}
 
 	list_old := func(gtx C, i int) D {
-		fmt.Println("Old Line:", i)
 		string_line := chosen_equivalents[i]
 		return material.H6(theme, string_line).Layout(gtx)
 	}
@@ -341,6 +335,13 @@ func handle_sentence_editor(gtx layout.Context, th *material.Theme) {
 	}
 }
 
+func source_sentence_label(gtx layout.Context) layout.Dimensions{
+	return material.H6(theme, source_sentence).Layout(gtx)
+}
+
+func target_sentence_label(gtx layout.Context) layout.Dimensions{
+	return material.H6(theme, sentence).Layout(gtx)
+}
 
 func handle_state_related_inputs(gtx layout.Context) {
 	for {
@@ -363,6 +364,9 @@ func handle_state_related_inputs(gtx layout.Context) {
 
 		
 		if k.Name == "⏎" && k.State == key.Press {
+			if control_state.value == curate {
+				source_sentence = controller.TranslateSentence(sentence)
+			}
 			control_state.next_mode()
 		}
 
@@ -455,6 +459,12 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		chosen_equivalents_display,
 	}
 
+	stage_four := []layout.Widget{
+		chosen_equivalents_display,
+		source_sentence_label,
+		target_sentence_label,
+	}
+
 	widgets := &stage_one
 
 	if (control_state.value == 0) {
@@ -464,6 +474,8 @@ func dashboard(gtx layout.Context, th *material.Theme) layout.Dimensions {
 		reset_curate = true
 	} else if (control_state.value == 2) { 
 		widgets = &stage_three
+	} else if (control_state.value == 3) { 
+		widgets = &stage_four
 	}
 
 	spaced := func(gtx C, i int) D {

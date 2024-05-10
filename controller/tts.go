@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"os/exec"
 )
 
@@ -11,11 +10,9 @@ func GenerateSpokenWord(word string, language string)  {
 
 func espeakSpokenWord(word string, language string) {
 	filepath := "temporary/" + word + ".wav"
-	cmd := exec.Command("espeak", "-v", "de", word, "-w", filepath) 
-	output, er := cmd.Output()
+	cmd := exec.Command("espeak", "-v", language, word, "-w", filepath) 
+	_, er := cmd.Output()
 	if er != nil {
-		fmt.Println(er)
 		return
 	}
-	fmt.Println(output)
 }
