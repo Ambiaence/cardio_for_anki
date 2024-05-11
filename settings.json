@@ -3,5 +3,6 @@
 	"target" : "de",
 	"tts" : "espeak",
 	"translate" : "deepl",
-	"equivalents" : "deepl"
+	"equivalents" : "deepl",
+	"deck_name" : "default"
 }

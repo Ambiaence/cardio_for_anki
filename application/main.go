@@ -30,7 +30,7 @@ const (
 	start = iota
 	choice = iota
 	curate = iota
-	end = iota
+	create = iota
 )
 
 type mode struct {
@@ -39,7 +39,7 @@ type mode struct {
 
 func (m *mode) next_mode (){
 	m.value = m.value + 1
-	if m.value > end {
+	if m.value > create {
 		m.value = 0
 	}
 }
@@ -139,6 +139,7 @@ func next_chosen_button() *WordButton {
 }
 
 func main() {
+	controller.CreateCard("front test", "Back Test")
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
 		if err := loop(w); err != nil {
@@ -434,6 +435,19 @@ func handle_state_related_inputs(gtx layout.Context) {
 			}
 			
 			definition_buttons[value].chosen = !definition_buttons[value].chosen
+		}
+
+		if (control_state.value == create) && (k.Name == "Tab") {
+			front := ""
+			back := ""
+
+			front = sentence
+			back = source_sentence + "/n" 
+
+			for _, equivalents := range chosen_equivalents {
+				back = back + "[" + equivalents + "] " 
+			}
+			controller.CreateCard(front, back)
 		}
 	}
 }

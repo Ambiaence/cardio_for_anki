@@ -19,7 +19,6 @@ func TranslateSentence(input string) string {
 }
 
 func readDeeplApiKey() string {
-    fmt.Println("readDeeplApi")
     jsonFile, err := os.Open("keys.json")
 
     if err != nil { 
@@ -35,7 +34,6 @@ func readDeeplApiKey() string {
     json.Unmarshal(bytes, &data)
 
     key := data["deepl"]
-    fmt.Println("What?", string(key))
     return key
 }
 
