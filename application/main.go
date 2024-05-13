@@ -300,11 +300,13 @@ func handle_sentence_editor(gtx layout.Context, th *material.Theme) {
 }
 
 func source_sentence_label(gtx layout.Context) layout.Dimensions{
-	return material.H6(theme, source_sentence).Layout(gtx)
+	label := "Source Language Sentence: " + source_sentence 
+	return material.H6(theme, label).Layout(gtx)
 }
 
 func target_sentence_label(gtx layout.Context) layout.Dimensions{
-	return material.H6(theme, sentence).Layout(gtx)
+	label := "Target Language Sentence: " + sentence 
+	return material.H6(theme, label).Layout(gtx)
 }
 
 func handle_state_related_inputs(gtx layout.Context) {
