@@ -105,7 +105,6 @@ var (
 
 
 func main() {
-	controller.CreateCard("front test", "Back Test")
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
 		if err := loop(w); err != nil {
@@ -131,8 +130,6 @@ func loop(window *app.Window) error {
 		case app.DestroyEvent:
 			return event.Err
 		case app.FrameEvent:
-			//ev, _ := event.Source.Event(key.Filter{}) 
-			//print(ev)
 			gtx := app.NewContext(&ops, event)
 			dashboard(gtx, theme)
 			event.Frame(gtx.Ops)
