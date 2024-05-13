@@ -33,40 +33,18 @@ const (
 	create = iota
 )
 
-type mode struct {
-	value int
-}
-
-func (m *mode) next_mode (){
-	m.value = m.value + 1
-	if m.value > create {
-		m.value = 0
-	}
-}
-
 type (
 	D = layout.Dimensions
 	C = layout.Context
-
 )
 
 type EquivalentWords []string
 
 type EquivalentMap map[int]EquivalentWords
 
-type WordButton struct {
-	text string
-	word string
-	chosen bool
-	area *widget.Clickable
-	number int	
-}
-
-var p = fmt.Println
-
-var equivalents = make(EquivalentMap)
-
 var (
+	equivalents = make(EquivalentMap)
+
 	theme *material.Theme
 	red_button_theme *material.Theme
 
@@ -110,33 +88,21 @@ var (
 			Axis: layout.Vertical,
 		},
 	}
+
+	words = []string{"one","two","three"}
+	control_state = Mode{value: 0}
+
+	current_curated_position = 0 
+	current_curated_word *WordButton
+	curated_word_definitions controller.WordList 
+
+	reset_curate = true
+	update_word_definitions = true
+
+	sentence string 
+	source_sentence string
 )
 
-var words = []string{"one","two","three"}  
-var control_state = mode{value: 0}
-var current_curated_position = 0 
-
-var current_curated_word *WordButton
-var curated_word_definitions controller.WordList 
-
-var reset_curate = true
-var update_word_definitions = true
-
-var sentence string 
-var source_sentence string
-
-func next_chosen_button() *WordButton {
-	for {
-		current_curated_position = current_curated_position + 1
-		if (current_curated_position == len(word_buttons)) {
-			current_curated_position = 0
-		}
-
-		if word_buttons[current_curated_position].chosen { 
-			return &word_buttons[current_curated_position]
-		}
-	}
-}
 
 func main() {
 	controller.CreateCard("front test", "Back Test")
