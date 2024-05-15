@@ -22,6 +22,7 @@ func read_deck_name() string {
     bytes, _ := ioutil.ReadAll(jsonFile)
 
     defer jsonFile.Close()
+
     var data map[string]string
 
     json.Unmarshal(bytes, &data)
@@ -50,10 +51,12 @@ func CreateCard(front string, back string) {
     }
 
     payload_bytes, err := json.Marshal(data)
+
     if err != nil {
-        fmt.Println("Error marshaling JSON:", err)
+        panic("Error marshaling anki card.")
         return
     }
+
     body := bytes.NewReader(payload_bytes)
 
     req, err := http.NewRequest("POST", "http://localhost:8765", body)
@@ -74,5 +77,4 @@ func CreateCard(front string, back string) {
     }
 
     defer resp.Body.Close()
-    fmt.Println("Anki Response Status:", resp.Status)
 }

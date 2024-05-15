@@ -9,7 +9,6 @@ import (
     "net/http"
     "encoding/json"
     "golang.org/x/net/http2"
-    "log"
 )
 
 var deepl_key = readDeeplApiKey()
@@ -64,28 +63,23 @@ func DeeplTranslate(input string) string {
     response, err := client.Do(request)
 
     if err != nil {
-        fmt.Println(err)
-        panic("err != nil")
+        panic("Bad deepl request.")
     }
 
     defer response.Body.Close()
 
-    fmt.Println("Status Code:", response.StatusCode)
-
     bodyBytes, err := io.ReadAll(response.Body)
 
     if err != nil {
-        log.Fatal(err)
+	panic("Failed Conversion To Bytes in Deepl Translate.")
     }
-
-    fmt.Println(string(bodyBytes))
 
     var json_data map[string]Translations 
 
     err = json.Unmarshal(bodyBytes, &json_data)
 
     if err != nil {
-	fmt.Println("Err != nil")
+        panic("After conversion to bytes, err != nil on unmarshal. ")
     }
 
     translations := json_data["translations"]
@@ -93,7 +87,7 @@ func DeeplTranslate(input string) string {
     text := translation["text"]
 
     if translations == nil {
-        panic("NIL")
+        panic("Failed to retreive translation from deepl reponse map. Index is \"text\"")
     }
     return text 
 }
