@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"image/color"
+	"errors"
 
 	"gioui.org/app"
 	"gioui.org/font"
@@ -309,6 +310,56 @@ func target_sentence_label(gtx layout.Context) layout.Dimensions{
 	return material.H6(theme, label).Layout(gtx)
 }
 
+func handle_curate_inputs(k key.Event, gtx layout.Context) {
+	if reset_curate == true {
+		current_curated_word = next_chosen_button()
+		curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
+		reset_curate = false
+	}
+
+	if (k.Name == "Tab") {
+		var equivalent_list EquivalentWords
+
+		for index, button  := range definition_buttons {
+			_ = index
+
+			if button.chosen == false {
+				continue;
+			}
+
+			equivalent_list = append(equivalent_list, button.word)
+			fmt.Println(equivalent_list)
+		}
+
+		equivalents[current_curated_word.number] = equivalent_list
+
+		update_word_definitions = true
+		update_equivalents = true
+		current_curated_word = next_chosen_button()
+		curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
+	}
+}
+
+func handle_choice_inputs(k key.Event, gtx layout.Context) error {
+	if len(k.Name) != 1 {
+		return errors.New("len(k.Name) !=1.")
+	}
+
+	value, err := strconv.ParseInt(string(k.Name), 10, 64)
+
+	if err != nil {
+		return errors.New("Could not parse integer.")
+	}
+
+	if value >= int64(len(word_buttons)) {
+		return errors.New("value <= int64*len(word_buttons))")
+	}
+	
+	word_buttons[value].chosen = !word_buttons[value].chosen
+
+	return nil
+}
+
 func handle_state_related_inputs(gtx layout.Context) {
 	for {
 		key_event, ok := gtx.Source.Event(key.Filter{})
@@ -337,52 +388,15 @@ func handle_state_related_inputs(gtx layout.Context) {
 		}
 
 		if (control_state.value == choice) && (k.State == key.Press) {
-
-			if len(k.Name) != 1 {
-				break
-			}
-
-			value, err := strconv.ParseInt(string(k.Name), 10, 64)
+			err := handle_choice_inputs(k ,gtx)
 
 			if err != nil {
 				break
 			}
-
-			if value >= int64(len(word_buttons)) {
-				break
-			}
-			
-			word_buttons[value].chosen = !word_buttons[value].chosen
 		}
 
-		if (control_state.value == curate){
-			if reset_curate == true {
-				current_curated_word = next_chosen_button()
-				curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
-				reset_curate = false
-			}
-
-			if (k.Name == "Tab") {
-				var equivalent_list EquivalentWords
-
-				for index, button  := range definition_buttons {
-					_ = index
-
-					if button.chosen == false {
-						continue;
-					}
-
-					equivalent_list = append(equivalent_list, button.word)
-					fmt.Println(equivalent_list)
-				}
-
-				equivalents[current_curated_word.number] = equivalent_list
-
-				update_word_definitions = true
-				update_equivalents = true
-				current_curated_word = next_chosen_button()
-				curated_word_definitions = controller.WordEquivalents(controller.Word(current_curated_word.word))
-			}
+		if (control_state.value == curate) {
+			handle_curate_inputs(k, gtx)
 		}
 
 		if (control_state.value == curate) && (k.State == key.Press) {
