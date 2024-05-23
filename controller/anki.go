@@ -1,35 +1,12 @@
 package controller
 
 import (
-    "os"
-    "io/ioutil"
     "bytes"
     "encoding/json"
-    "fmt"
     "net/http"
 )
 
 var deck_name = GlobalSettings.DeckName
-
-func read_deck_name() string {
-    jsonFile, err := os.Open("settings.json")
-
-    if err != nil { 
-        fmt.Println(err)
-        panic("Settings file not found")
-    }
-
-    bytes, _ := ioutil.ReadAll(jsonFile)
-
-    defer jsonFile.Close()
-
-    var data map[string]string
-
-    json.Unmarshal(bytes, &data)
-
-    key := data["deck_name"]
-    return key
-}
 
 func CreateCard(front string, back string) {
     data := map[string]interface{}{
