@@ -9,7 +9,7 @@ import (
     "net/http"
 )
 
-var deck_name = read_deck_name()
+var deck_name = GlobalSettings.DeckName
 
 func read_deck_name() string {
     jsonFile, err := os.Open("settings.json")
