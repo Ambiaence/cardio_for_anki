@@ -42,8 +42,8 @@ func DeeplTranslate(input string) string {
 
     data := map[string]interface{}{
         "text":         []string{input},
-        "target_lang":  "EN",
-        "source_lang":  "DE",
+        "target_lang":  GlobalSettings.Source,
+        "source_lang":  GlobalSettings.Target,
     }
 
     jsonData, _ := json.Marshal(data)
