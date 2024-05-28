@@ -108,6 +108,7 @@ var (
 func main() {
 	go func() {
 		w := app.NewWindow(app.Size(unit.Dp(800), unit.Dp(700)))
+		w.Option(app.Title("Cardio For Anki"));
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
